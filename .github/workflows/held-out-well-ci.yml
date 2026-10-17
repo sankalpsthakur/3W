@@ -1,0 +1,99 @@
+# CI for benchmarks/held_out_well. Lives on the CI branch only.
+name: held-out-well CI
+
+on:
+  push:
+    branches:
+      - "ci/**"
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          sparse-checkout: |
+            /*
+            !**/*.parquet
+          sparse-checkout-cone-mode: false
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v4
+
+      - name: Create venv
+        run: uv venv .venv
+
+      - name: Install CPU torch first (the toolkit pins only a minimum)
+        run: uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+
+      - name: Install the toolkit with dev extras
+        run: uv pip install -e '.[dev]'
+
+      - name: Versions
+        run: |
+          source .venv/bin/activate
+          python --version
+          ruff --version
+          mypy --version
+          pip list 2>/dev/null | grep -i -E "numpy|pandas|scikit|pydantic|torch|pyarrow|pytest" || true
+
+      - name: ruff format --check
+        if: always()
+        run: |
+          source .venv/bin/activate
+          ruff format --check benchmarks/held_out_well
+
+      - name: ruff check
+        if: always()
+        run: |
+          source .venv/bin/activate
+          ruff check benchmarks/held_out_well
+
+      - name: ruff W505 (comments and docstrings up to 72 columns)
+        if: always()
+        run: |
+          source .venv/bin/activate
+          ruff check --select W505 --config 'lint.pycodestyle.max-doc-length = 72' benchmarks/held_out_well
+
+      - name: mypy
+        if: always()
+        run: |
+          source .venv/bin/activate
+          mypy benchmarks/held_out_well
+
+      - name: pytest
+        if: always()
+        run: |
+          source .venv/bin/activate
+          python -m pytest -q -p no:cacheprovider benchmarks/held_out_well
+
+      - name: Formatter diff (what ruff format would change)
+        if: always()
+        run: |
+          source .venv/bin/activate
+          ruff format benchmarks/held_out_well || true
+          git diff --stat > format.stat || true
+          git diff > format.diff || true
+          cat format.stat
+
+      - name: Upload formatter diff
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: format-diff-py${{ matrix.python-version }}
+          path: |
+            format.diff
+            format.stat
