@@ -97,7 +97,6 @@ def reference_channel_features(x, r):
     out = np.full((len(r), len(PER_CHANNEL)), np.nan)
     ix = {k: i for i, k in enumerate(PER_CHANNEL)}
     for k, rr in enumerate(r):
-
         a2, _ = window(x, rr, W2)
         a3, w3 = window(x, rr, W3)
         a4, _ = window(x, rr, W4)

@@ -177,7 +177,10 @@ SHORT, REF = 300, 3300  # windows [r-299, r] and [r-3599, r-300]
 
 
 def _past_stats(prefix, r, lo_off, hi_off):
-    """Count, mean and standard deviation of rows r-lo_off+1 .. r-hi_off."""
+    """Count, mean and standard deviation over a trailing window.
+
+    The window holds rows r - lo_off + 1 .. r - hi_off.
+    """
     c0, c1, c2 = prefix
     cnt = c0[r - hi_off + 1] - c0[r - lo_off + 1]
     s1 = c1[r - hi_off + 1] - c1[r - lo_off + 1]
