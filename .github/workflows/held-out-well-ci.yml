@@ -80,6 +80,14 @@ jobs:
           source .venv/bin/activate
           python -m pytest -q -p no:cacheprovider benchmarks/held_out_well
 
+      - name: README commands, run from the folder
+        if: always()
+        run: |
+          source .venv/bin/activate
+          cd benchmarks/held_out_well
+          python -m pytest -q -p no:cacheprovider
+          python -m held_out_well manifest --check
+
       - name: Formatter diff (what ruff format would change)
         if: always()
         run: |
