@@ -19,8 +19,8 @@ import csv
 import hashlib
 import json
 import time
-from pathlib import Path
 from collections.abc import Callable, Sequence
+from pathlib import Path
 from typing import Any
 
 import numpy as np

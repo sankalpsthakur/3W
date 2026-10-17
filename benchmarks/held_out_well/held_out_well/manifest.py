@@ -30,8 +30,8 @@ import argparse
 import csv
 import hashlib
 import json
-from pathlib import Path
 from collections.abc import Iterable
+from pathlib import Path
 from typing import Any
 
 from .constants import N_DEV_FOLDS, N_TEST_WELLS, PROTOCOL_ID

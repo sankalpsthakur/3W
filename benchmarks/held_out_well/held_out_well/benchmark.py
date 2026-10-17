@@ -10,8 +10,8 @@ from __future__ import annotations
 
 import csv
 import json
-from pathlib import Path
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import numpy as np
