@@ -23,12 +23,12 @@ Complementary metrics, all on the same pooled decisions unless stated:
 | macro-F1 over the nine event classes | as the primary metric, normal left out |
 | macro-F1 per well | macro-F1 inside each test well (classes present in that well); mean and standard deviation over wells |
 | event AUROC and average precision | the event score against "event class above 0", normal decisions against the rest, threshold free |
-| episode coverage | share of event episodes (at least 300 s long) during which the alarm is on at some eligible decision |
-| onset detected within 300 s | among episodes whose normal-to-event transition is observed, share with an alarm rising edge within 300 s of the onset |
+| episode coverage | share of the observable event episodes (at least 300 s long, with an eligible decision) during which the alarm is on at some decision |
+| onset detected within 300 s | among episodes whose normal-to-event transition is observed inside the instance, share with an alarm rising edge within 300 s of the onset (an alarm that was already on does not count) |
 | false alarms per normal day | alarm rising edges inside normal operation, per day of eligible normal time |
 | normal time in alarm | share of eligible normal decisions with the alarm on |
 
-The alarm is on after 2 consecutive eligible decisions with a score at or above a threshold and off after 2 consecutive eligible decisions below it. Ineligible decisions and the start of an instance reset it. The threshold is chosen on the development wells only, on out-of-fold scores: the lowest candidate with at most 1 false alarm per normal day and at most 5 % of normal time in alarm (ties go to higher episode coverage). Candidates are the quantiles of the normal scores from the median up, and a fixed grid from 0.05 to 0.99.
+The alarm is on after 2 consecutive eligible decisions with a score at or above a threshold and off after 2 consecutive eligible decisions below it. Ineligible decisions and the start of an instance reset it. The threshold is chosen on the development wells only, on out-of-fold scores: among the candidates with at most 1 false alarm per normal day and at most 5 % of normal time in alarm (on at least half a day of normal operation), the one with the highest episode coverage; a tie goes to the lower false alarm rate. Candidates are the quantiles of the normal scores from the median up, and a fixed grid from 0.05 to 0.99.
 
 Intervals are percentile intervals from 2,000 resamples of whole wells (seed 611). `compare` reports paired differences on the same resamples.
 

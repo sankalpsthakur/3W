@@ -293,11 +293,11 @@ def select_threshold(
 ) -> tuple[float | None, list[dict[str, Any]]]:
     """The alarm threshold, frozen on development predictions.
 
-    Lowest candidate threshold that meets both budgets (false alarms per
-    normal day and share of normal time in alarm) on the given
-    out-of-fold predictions; ties on episode coverage go to the lower
-    false alarm rate. Returns the threshold (None if no candidate is
-    feasible) and the table of candidates.
+    Among the candidate thresholds that meet both budgets (false alarms
+    per normal day and share of normal time in alarm) on the given
+    out-of-fold predictions, the one with the highest episode coverage;
+    a tie goes to the lower false alarm rate. Returns the threshold
+    (None if no candidate is feasible) and the table of candidates.
     """
     score = np.asarray(score, dtype=np.float64)
     sel = bench.well_mask(wells)[bench.well_of_decision]

@@ -98,3 +98,10 @@ jobs:
             format.diff
             format.stat
             benchmarks/held_out_well
+
+      - name: Link check (lychee) on this folder, as bin/lint does locally
+        if: always() && matrix.python-version == '3.12'
+        uses: lycheeverse/lychee-action@v2
+        with:
+          args: --config lychee.toml --no-progress 'benchmarks/held_out_well/**/*.md'
+          fail: true
