@@ -119,7 +119,7 @@ class Benchmark:
         return m
 
     def dev_classes(self) -> list[int]:
-        """Classes that dev wells can train and score on different wells.
+        """Classes that can be trained and scored on different wells.
 
         Class 0 and every event class with episodes in two or more
         development wells.

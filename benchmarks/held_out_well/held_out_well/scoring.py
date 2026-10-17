@@ -144,8 +144,7 @@ def metrics_from_sums(
     out = detection_metrics(flat)
     cls = [classification_metrics(part(r, "conf"), classes) for r in flat]
     tf = [
-        threshold_free_metrics(part(r, "hist_pos"), part(r, "hist_neg"))
-        for r in flat
+        threshold_free_metrics(part(r, "hist_pos"), part(r, "hist_neg")) for r in flat
     ]
     for key in (
         "macro_f1",
@@ -163,9 +162,7 @@ def metrics_from_sums(
 
 
 # ----------------------------------------------- bootstrap
-def resample_counts(
-    n_wells: int, B: int = BOOT_B, seed: int = BOOT_SEED
-) -> np.ndarray:
+def resample_counts(n_wells: int, B: int = BOOT_B, seed: int = BOOT_SEED) -> np.ndarray:
     """How often each well is drawn in each of ``B`` resamples."""
     rng = np.random.default_rng(seed)
     draws = [
@@ -232,16 +229,18 @@ def report(
     threshold chosen on development predictions (``select_threshold``).
     """
     S, names, delays = well_statistics(bench, score, pred, wells, theta)
-    point = {
-        k: float(v) for k, v in metrics_from_sums(S.sum(0), classes).items()
-    }
+    point = {k: float(v) for k, v in metrics_from_sums(S.sum(0), classes).items()}
     flat = [d for ds in delays for d in ds]
     point["onset_delay_median_s"] = float(np.median(flat)) if flat else NAN
     if pred is not None:
         per_well = metrics_from_sums(S, classes)["macro_f1"]
         ok = np.isfinite(per_well)
-        point["per_well_macro_f1_mean"] = float(np.mean(per_well[ok])) if ok.any() else NAN
-        point["per_well_macro_f1_sd"] = float(np.std(per_well[ok], ddof=1)) if ok.sum() > 1 else NAN
+        point["per_well_macro_f1_mean"] = (
+            float(np.mean(per_well[ok])) if ok.any() else NAN
+        )
+        point["per_well_macro_f1_sd"] = (
+            float(np.std(per_well[ok], ddof=1)) if ok.sum() > 1 else NAN
+        )
     point.update(exact_event_metrics(bench, score, wells))
     res: dict[str, Any] = {
         "n_wells": len(names),
@@ -305,7 +304,9 @@ def select_threshold(
     if len(cand) == 0:
         return None, []
     qs = np.unique(
-        np.r_[np.quantile(cand, np.linspace(0.5, 1.0, 101)), np.linspace(0.05, 0.99, 48)]
+        np.r_[
+            np.quantile(cand, np.linspace(0.5, 1.0, 101)), np.linspace(0.05, 0.99, 48)
+        ]
     )
     table: list[dict[str, Any]] = []
     best: dict[str, Any] | None = None
@@ -317,9 +318,7 @@ def select_threshold(
         cov = float(m["episode_coverage"])
         days = float(m["normal_days"])
         feasible = (
-            days >= min_normal_days
-            and fa <= fa_per_day_max
-            and occ <= occupation_max
+            days >= min_normal_days and fa <= fa_per_day_max and occ <= occupation_max
         )
         table.append(
             {

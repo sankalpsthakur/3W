@@ -51,12 +51,7 @@ def episodes_from_runs(
     for lab, s, e in class_runs:
         ev = int(event_class(lab)) if lab >= 0 else NA
         if ev > 0:
-            if (
-                out
-                and prev is not None
-                and prev["ev"] == ev
-                and out[-1]["end"] == s
-            ):
+            if out and prev is not None and prev["ev"] == ev and out[-1]["end"] == s:
                 out[-1]["end"] = e
             else:
                 known = prev is not None and prev["ev"] == 0 and prev["end"] == s

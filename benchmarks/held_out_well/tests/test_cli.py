@@ -41,7 +41,10 @@ def test_detector_file_without_classes(oracle_file, tmp_path, capsys):
     np.savez(det, score=z["score"])
     assert cli.main(["score", str(det), "--theta", "0.5", "--boot", "0"]) == 0
     text = capsys.readouterr().out
-    assert "Primary metric, macro-F1 over the classes present in the pooled truth: -" in text
+    assert (
+        "Primary metric, macro-F1 over the classes present in the pooled truth: -"
+        in text
+    )
 
 
 def test_compare_reports_paired_differences(oracle_file, tmp_path, capsys, monkeypatch):

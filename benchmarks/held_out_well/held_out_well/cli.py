@@ -53,9 +53,7 @@ def load_predictions(path: str | Path) -> tuple[np.ndarray, np.ndarray | None]:
     return score, pred
 
 
-def split_wells(
-    bench: Benchmark, split: str
-) -> tuple[list[str], list[int] | None]:
+def split_wells(bench: Benchmark, split: str) -> tuple[list[str], list[int] | None]:
     """Wells of a split and the class set its macro averages run over.
 
     The sealed test wells and the pooled set use every class present in
@@ -111,7 +109,10 @@ def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
         ("event average precision", _fmt(rep, "average_precision")),
         ("episode coverage", _fmt(rep, "episode_coverage", pct=True)),
         ("onset detected within 300 s", _fmt(rep, "onset_detection_300s", True)),
-        ("false alarms per normal day", _fmt(rep, "false_alarms_per_normal_day", digits=2)),
+        (
+            "false alarms per normal day",
+            _fmt(rep, "false_alarms_per_normal_day", digits=2),
+        ),
         ("normal time in alarm", _fmt(rep, "normal_time_occupation", pct=True)),
     ]
     lines += [f"| {k} | {v} |" for k, v in rows]
@@ -129,8 +130,7 @@ def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
     if conf.sum() > 0:
         lines += [
             "",
-            "Confusion matrix (rows: truth, columns: prediction, eligible "
-            "decisions):",
+            "Confusion matrix (rows: truth, columns: prediction, eligible decisions):",
             "",
             "| truth \\ pred | "
             + " | ".join(str(c) for c in range(N_CLASSES))
@@ -149,9 +149,7 @@ def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
     return "\n".join(lines)
 
 
-def _theta(
-    bench: Benchmark, score: np.ndarray, given: float | None
-) -> float | None:
+def _theta(bench: Benchmark, score: np.ndarray, given: float | None) -> float | None:
     if given is not None:
         return given
     theta, _ = select_threshold(bench, score, bench.wells_with_role("dev"))
@@ -254,7 +252,9 @@ def build_parser() -> argparse.ArgumentParser:
     s = sub.add_parser("score", help="score one prediction file")
     s.add_argument("predictions", help=".npz with score (and pred)")
     s.add_argument("--split", choices=["test", "dev", "all"], default="test")
-    s.add_argument("--theta", type=float, help="alarm threshold (default: chosen on dev)")
+    s.add_argument(
+        "--theta", type=float, help="alarm threshold (default: chosen on dev)"
+    )
     s.add_argument("--boot", type=int, default=BOOT_B, help="resamples (0: none)")
     s.add_argument("--json", help="write the full report here")
     s.set_defaults(func=cmd_score)
@@ -268,7 +268,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     m = sub.add_parser("manifest", help="regenerate the well split")
     m.add_argument("--out", help="where to write manifest.csv")
-    m.add_argument("--check", action="store_true", help="compare with the committed file")
+    m.add_argument(
+        "--check", action="store_true", help="compare with the committed file"
+    )
     m.set_defaults(func=cmd_manifest)
 
     r = sub.add_parser("rebuild-index", help="rebuild the label index with the toolkit")
@@ -279,8 +281,12 @@ def build_parser() -> argparse.ArgumentParser:
     b = sub.add_parser("baselines", help="run the reference baselines")
     b.add_argument("--dataset-root", required=True, help="folder with 0/ ... 9/")
     b.add_argument("--out", required=True, help="folder for predictions and results")
-    b.add_argument("--models", nargs="*", choices=["simple", "volatility", "rf", "lgbm"])
-    b.add_argument("--smoke", action="store_true", help="development wells only, tiny models")
+    b.add_argument(
+        "--models", nargs="*", choices=["simple", "volatility", "rf", "lgbm"]
+    )
+    b.add_argument(
+        "--smoke", action="store_true", help="development wells only, tiny models"
+    )
     b.add_argument("--workers", type=int, default=4)
     b.add_argument("--boot", type=int, default=BOOT_B)
     b.set_defaults(func=cmd_baselines)

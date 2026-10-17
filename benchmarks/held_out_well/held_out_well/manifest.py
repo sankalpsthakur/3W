@@ -126,9 +126,7 @@ def check_folds(folds: list[list[str]], stats: dict[str, dict[str, Any]]):
         wc = [w for w in dev if c in stats[w]["supported"]]
         if len(wc) >= 2:
             nf = sum(
-                1
-                for fold in folds
-                if any(c in stats[w]["supported"] for w in fold)
+                1 for fold in folds if any(c in stats[w]["supported"] for w in fold)
             )
             if nf < 2:
                 return f"class {c} supported in {nf} dev folds"
@@ -180,9 +178,7 @@ def generate(index: dict[str, Any], seed_hex: str):
                 "n_files": s["n_files"],
                 "labelled_hours": round(s["labelled_rows"] / 3600, 3),
                 "normal_hours": round(s["normal_rows"] / 3600, 3),
-                "classes_supported": ";".join(
-                    str(c) for c in sorted(s["supported"])
-                ),
+                "classes_supported": ";".join(str(c) for c in sorted(s["supported"])),
             }
         )
     info = {

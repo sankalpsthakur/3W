@@ -128,9 +128,7 @@ def validate(
         raise ValueError("scores must lie in [0, 1]")
     if need_pred:
         p = np.asarray(pred)
-        if p.shape != (bench.n,) or np.any(
-            (p[need] < 0) | (p[need] >= N_CLASSES)
-        ):
+        if p.shape != (bench.n,) or np.any((p[need] < 0) | (p[need] >= N_CLASSES)):
             raise ValueError("pred must give a class 0..9 on every decision")
     return sel
 
@@ -192,9 +190,7 @@ def well_statistics(
     ndec = bench.inst_offset[bench.ep_inst + 1] - off
     lo = np.maximum(0, -(-(bench.ep_start - FIRST_ROW) // STRIDE))
     hi = np.minimum(ndec - 1, -(-(bench.ep_end - FIRST_ROW) // STRIDE) - 1)
-    hi_on = np.minimum(
-        ndec - 1, (bench.ep_start + ONSET_TOL - FIRST_ROW) // STRIDE
-    )
+    hi_on = np.minimum(ndec - 1, (bench.ep_start + ONSET_TOL - FIRST_ROW) // STRIDE)
     wanted = bench.well_mask(wells)
     ok_ep = wanted[bench.ep_well] & (hi >= lo)
     gl, gh, gho = off + lo, off + hi, off + hi_on
@@ -217,9 +213,7 @@ def well_statistics(
         ("on_obs", onset_obs),
         ("on_det", onset_det),
     ):
-        h = np.bincount(
-            ew[mask] * N_CLASSES + ev[mask], minlength=nw * N_CLASSES
-        )
+        h = np.bincount(ew[mask] * N_CLASSES + ev[mask], minlength=nw * N_CLASSES)
         S[:, slice(*LAYOUT[key])] = h.reshape(nw, N_CLASSES)
     # delay of every detected onset: first rising edge after its start
     delays: list[list[int]] = [[] for _ in range(nw)]
@@ -258,9 +252,7 @@ def detection_metrics(S: Any) -> dict[str, np.ndarray]:
         out["carried_in_share_of_covered"] = np.where(
             ep_cov > 0, (ep_cov - ep_fresh) / ep_cov, np.nan
         )
-        out["onset_detection_300s"] = np.where(
-            on_obs > 0, on_det / on_obs, np.nan
-        )
+        out["onset_detection_300s"] = np.where(on_obs > 0, on_det / on_obs, np.nan)
         days = g("norm_dec") * STRIDE / 86400.0
         out["false_alarms_per_normal_day"] = np.where(
             days > 0, g("false_alarms") / days, np.nan

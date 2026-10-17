@@ -162,8 +162,12 @@ def instance_features(cont: np.ndarray, state: np.ndarray) -> np.ndarray:
     shape (decisions, 333) in float32.
     """
     r = decision_rows(cont.shape[0])
-    blocks = [channel_features(cont[:, j].astype(np.float64), r) for j in range(len(CONT))]
-    blocks += [state_features(state[:, j].astype(np.float64), r) for j in range(len(STATE))]
+    blocks = [
+        channel_features(cont[:, j].astype(np.float64), r) for j in range(len(CONT))
+    ]
+    blocks += [
+        state_features(state[:, j].astype(np.float64), r) for j in range(len(STATE))
+    ]
     return np.concatenate(blocks, axis=1)
 
 

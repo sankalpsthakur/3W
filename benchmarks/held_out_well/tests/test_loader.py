@@ -40,7 +40,11 @@ def dataset_root(tmp_path, monkeypatch):
     monkeypatch.setitem(rules, "total_parquet_files", N_FILES)
     na = [-1] * 3600
     write_instance(
-        tmp_path, 0, "WELL-00001_20200101000000.parquet", na + [0] * 1400, na + [0] * 1400
+        tmp_path,
+        0,
+        "WELL-00001_20200101000000.parquet",
+        na + [0] * 1400,
+        na + [0] * 1400,
     )
     labels = na + [0] * 1200 + [102] * 600 + [2] * 1600
     write_instance(

@@ -61,9 +61,7 @@ def metrics_numpy(S, classes=None):
         npres > 0, (rec * present).sum(-1) / safe, np.nan
     )
     total = conf.sum((-1, -2))
-    out["accuracy"] = np.where(
-        total > 0, tp.sum(-1) / np.maximum(total, 1), np.nan
-    )
+    out["accuracy"] = np.where(total > 0, tp.sum(-1) / np.maximum(total, 1), np.nan)
     for c in range(N_CLASSES):
         out[f"f1_c{c}"] = np.where(rowsum[..., c] > 0, f1[..., c], np.nan)
     hp, hn = part(S, "hist_pos"), part(S, "hist_neg")
@@ -113,7 +111,9 @@ def reference_channel_features(x, r):
         m3 = a3.mean() if len(a3) else np.nan
         m2 = a2.mean() if len(a2) else np.nan
         span = a3.max() - a3.min() if len(a3) else np.nan
-        out[k, ix["range_rel_w3"]] = span / (abs(m3) + EPS_REL + s4) if len(a3) else np.nan
+        out[k, ix["range_rel_w3"]] = (
+            span / (abs(m3) + EPS_REL + s4) if len(a3) else np.nan
+        )
         denom = s4 + EPS_REL * (1 + abs(m4))
         out[k, ix["z_last_w4"]] = (out[k, ix["last"]] - m4) / denom
         out[k, ix["z_w2_w4"]] = (m2 - m4) / denom

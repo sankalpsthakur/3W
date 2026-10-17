@@ -84,7 +84,7 @@ def run_folds(
     cap_per_class: int = CAP_PER_CLASS,
     seed: int = 0,
 ) -> np.ndarray:
-    """Fit on the training wells of each fold; predict the held-out ones.
+    """Fit on the training wells of each fold, predict the others.
 
     Returns class probabilities (float16) for every eligible decision of
     the predicted wells and NaN elsewhere.
@@ -101,7 +101,9 @@ def run_folds(
             bench.well_mask(pred_wells)[bench.well_of_decision] & bench.elig & have
         )
         proba[rows] = predict_full(model, X, rows).astype(np.float16)
-        log(f"  fold {name}: train {len(idx)}, predict {len(rows)}, {time.time() - t0:.0f}s")
+        log(
+            f"  fold {name}: train {len(idx)}, predict {len(rows)}, {time.time() - t0:.0f}s"
+        )
     return proba
 
 

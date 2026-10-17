@@ -20,9 +20,7 @@ def test_alarm_state_matches_reference_on_random_sequences():
         )
         for i, n in [(1, 300), (2, 200), (3, 450)]
     ]
-    elig = {
-        f["path"]: rng.random(n_decisions(f["rows"])) > 0.15 for f in files
-    }
+    elig = {f["path"]: rng.random(n_decisions(f["rows"])) > 0.15 for f in files}
     b = make_bench(files, elig)
     for _ in range(40):
         score = rng.random(b.n)

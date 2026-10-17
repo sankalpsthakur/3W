@@ -62,7 +62,9 @@ def build_features(
                 raise ValueError(f"{bench.inst_path[i]}: {fx.shape[0]} != {b - a}")
             X[a:b], simple[a:b], have[a:b] = fx, sc, True
             if done % 100 == 0:
-                R.log(f"features {done}/{len(active)} instances ({time.time() - t0:.0f}s)")
+                R.log(
+                    f"features {done}/{len(active)} instances ({time.time() - t0:.0f}s)"
+                )
     return X, simple, have
 
 
@@ -97,7 +99,11 @@ def run(
 
     def finish(name: str, score: np.ndarray, pred: np.ndarray | None) -> None:
         theta, _ = select_threshold(bench, score, dev)
-        reports = {"dev_oof": report(bench, score, pred, dev, theta, bench.dev_classes(), B=boot)}
+        reports = {
+            "dev_oof": report(
+                bench, score, pred, dev, theta, bench.dev_classes(), B=boot
+            )
+        }
         if test:
             reports["test"] = report(bench, score, pred, test, theta, B=boot)
         results[name] = {"theta": theta, "reports": reports}
@@ -113,7 +119,9 @@ def run(
         sel = bench.elig & have
         finish("simple", np.where(sel, np.nan_to_num(unit, nan=0.0), np.nan), None)
     if "volatility" in models:
-        proba = R.run_folds(bench, X, have, lambda: R.VolatilityDetector(names), plan, cap)
+        proba = R.run_folds(
+            bench, X, have, lambda: R.VolatilityDetector(names), plan, cap
+        )
         finish("volatility", R.to_score_pred(proba)[0], None)
     for name, maker in (("rf", R.make_random_forest), ("lgbm", R.make_lightgbm)):
         if name in models:
