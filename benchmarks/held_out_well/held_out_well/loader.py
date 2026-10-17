@@ -191,7 +191,7 @@ def compare_with_committed(
     table: dict[str, np.ndarray],
     protocol_dir: str | Path | None = None,
 ) -> dict[str, Any]:
-    """Compare a rebuilt index and decision table with the committed ones.
+    """Compare a rebuilt index and table with the committed ones.
 
     Reports, per record field, how many instances differ, and whether
     the SHA-256 of every decision array equals the committed value.

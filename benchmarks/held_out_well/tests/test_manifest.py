@@ -100,7 +100,7 @@ def test_rules_reject_bad_splits():
 
 @pytest.mark.parametrize("which", ["test", "dev"])
 def test_every_event_class_is_in_test_and_dev(which):
-    """Rule K2: classes 1..9 are supported on both sides of the split."""
+    """Rule K2: classes 1..9 occur on both sides of the split."""
     index = json.loads(INDEX.read_text())
     stats = well_stats(index)
     role = {

@@ -1,4 +1,4 @@
-"""The decision grid: where a model must decide, and which decisions count.
+"""The decision grid: where a model decides and what counts.
 
 Decisions sit on a fixed grid of rows of each instance: one every
 ``STRIDE`` rows (30 s) from row ``FIRST_ROW`` (3,600), so that a full

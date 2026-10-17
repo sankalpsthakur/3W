@@ -19,7 +19,7 @@ def fake_file(path, well, rows, class_runs, state_runs=None):
 
 
 def make_bench(files, elig=None, manifest=None):
-    """A Benchmark over fake files (every well a test well by default)."""
+    """A Benchmark over fake files (all wells are test wells)."""
     files = sorted(files, key=lambda f: f["path"])
     flags = {}
     for f in files:

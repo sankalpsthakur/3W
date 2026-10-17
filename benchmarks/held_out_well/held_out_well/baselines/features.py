@@ -42,7 +42,7 @@ PER_STATE = ["last", "changes_w3", "changes_w4"]
 
 
 def feature_names() -> list[str]:
-    """Names of the 333 features: 17 per process channel, 3 per valve."""
+    """Names of the 333 features (17 per channel, 3 per valve)."""
     names = [f"{c}|{f}" for c in CONT for f in PER_CHANNEL]
     return names + [f"{c}|{f}" for c in STATE for f in PER_STATE]
 

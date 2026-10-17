@@ -104,7 +104,7 @@ class Benchmark:
         )
 
     def wells_with_role(self, role: str, fold: int | None = None) -> list[str]:
-        """Wells with a role ('dev' or 'test'), optionally of one fold."""
+        """Wells of a role ('dev' or 'test'), optionally of one fold."""
         return [
             w
             for w in self.wells
@@ -113,13 +113,13 @@ class Benchmark:
         ]
 
     def well_mask(self, wells: Sequence[str]) -> np.ndarray:
-        """Boolean vector over ``self.wells`` marking the given wells."""
+        """Boolean vector over ``self.wells`` of the given wells."""
         m = np.zeros(len(self.wells), dtype=bool)
         m[[self.wells.index(w) for w in wells]] = True
         return m
 
     def dev_classes(self) -> list[int]:
-        """Classes that can be trained and scored on different dev wells.
+        """Classes that dev wells can train and score on different wells.
 
         Class 0 and every event class with episodes in two or more
         development wells.

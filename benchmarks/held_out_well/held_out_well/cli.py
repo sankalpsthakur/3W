@@ -6,8 +6,8 @@
     python -m held_out_well rebuild-index --dataset-root DIR --out DIR
 
 A prediction file is an ``.npz`` with ``score`` (float, one P(event) in
-[0, 1] per decision of ``protocol/decisions.npz``) and, for a classifier,
-``pred`` (integer class 0..9 per decision).
+[0, 1] per decision of ``protocol/decisions.npz``) and, for a
+classifier, ``pred`` (integer class 0..9 per decision).
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ PAIRED_KEYS = [
 
 
 def load_predictions(path: str | Path) -> tuple[np.ndarray, np.ndarray | None]:
-    """Read ``score`` and, if present, ``pred`` from an ``.npz`` file."""
+    """Read ``score`` and, if present, ``pred`` from an .npz file."""
     z = np.load(path)
     score = z["score"].astype(np.float64)
     pred = z["pred"].astype(np.int64) if "pred" in z.files else None
@@ -85,7 +85,7 @@ def _fmt(rep: dict[str, Any], key: str, pct: bool = False, digits: int = 3) -> s
 
 
 def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
-    """Markdown summary: primary metric, complementary metrics, tables."""
+    """Markdown summary: primary and complementary metrics, tables."""
     pt = rep["point"]
     lines = [
         f"### {name} on the {split} wells ({rep['n_wells']} wells)",

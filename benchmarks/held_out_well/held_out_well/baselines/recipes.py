@@ -84,7 +84,7 @@ def run_folds(
     cap_per_class: int = CAP_PER_CLASS,
     seed: int = 0,
 ) -> np.ndarray:
-    """Fit on the training wells of each fold, predict its held-out wells.
+    """Fit on the training wells of each fold; predict the held-out ones.
 
     Returns class probabilities (float16) for every eligible decision of
     the predicted wells and NaN elsewhere.
