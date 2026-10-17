@@ -24,7 +24,13 @@ import numpy as np
 from .benchmark import PROTOCOL_DIR, Benchmark
 from .constants import BOOT_B, CLASS_NAMES, N_CLASSES
 from .detection import well_statistics
-from .scoring import bootstrap, metrics_from_sums, report, select_threshold
+from .scoring import (
+    bootstrap,
+    jsonable,
+    metrics_from_sums,
+    report,
+    select_threshold,
+)
 
 PRIMARY = "macro_f1"
 PAIRED_KEYS = [
@@ -62,21 +68,6 @@ def split_wells(
     if split == "dev":
         return bench.wells_with_role("dev"), bench.dev_classes()
     return list(bench.wells), None
-
-
-def jsonable(o: Any) -> Any:
-    """Convert numpy values to JSON types; NaN becomes null."""
-    if isinstance(o, dict):
-        return {str(k): jsonable(v) for k, v in o.items()}
-    if isinstance(o, (list, tuple)):
-        return [jsonable(v) for v in o]
-    if isinstance(o, (np.floating, float)):
-        return None if not np.isfinite(o) else float(o)
-    if isinstance(o, np.integer):
-        return int(o)
-    if isinstance(o, np.ndarray):
-        return jsonable(o.tolist())
-    return o
 
 
 def _fmt(rep: dict[str, Any], key: str, pct: bool = False, digits: int = 3) -> str:
@@ -239,6 +230,20 @@ def cmd_rebuild(a: argparse.Namespace) -> int:
     return 0 if result["all_equal"] else 1
 
 
+def cmd_baselines(a: argparse.Namespace) -> int:
+    from .baselines.run import MODELS, run
+
+    run(
+        a.dataset_root,
+        a.out,
+        models=a.models or MODELS,
+        smoke=a.smoke,
+        workers=a.workers,
+        boot=a.boot,
+    )
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="python -m held_out_well",
@@ -271,6 +276,14 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--out", required=True, help="folder for rebuild_report.json")
     r.add_argument("--save", action="store_true", help="also write the rebuilt tables")
     r.set_defaults(func=cmd_rebuild)
+    b = sub.add_parser("baselines", help="run the reference baselines")
+    b.add_argument("--dataset-root", required=True, help="folder with 0/ ... 9/")
+    b.add_argument("--out", required=True, help="folder for predictions and results")
+    b.add_argument("--models", nargs="*", choices=["simple", "volatility", "rf", "lgbm"])
+    b.add_argument("--smoke", action="store_true", help="development wells only, tiny models")
+    b.add_argument("--workers", type=int, default=4)
+    b.add_argument("--boot", type=int, default=BOOT_B)
+    b.set_defaults(func=cmd_baselines)
     return p
 
 

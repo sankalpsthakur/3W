@@ -335,3 +335,19 @@ def select_threshold(
         ):
             best = table[-1]
     return (best["theta"] if best else None), table
+
+
+# --------------------------------------------------------- output
+def jsonable(o: Any) -> Any:
+    """Convert numpy values to JSON types; NaN becomes null."""
+    if isinstance(o, dict):
+        return {str(k): jsonable(v) for k, v in o.items()}
+    if isinstance(o, (list, tuple)):
+        return [jsonable(v) for v in o]
+    if isinstance(o, (np.floating, float)):
+        return None if not np.isfinite(o) else float(o)
+    if isinstance(o, np.integer):
+        return int(o)
+    if isinstance(o, np.ndarray):
+        return jsonable(o.tolist())
+    return o

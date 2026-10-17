@@ -78,3 +78,57 @@ def metrics_numpy(S, classes=None):
         dr = hp[..., ::-1] / np.maximum(P[..., None], 1)
         out["average_precision"] = np.where(P > 0, (prec * dr).sum(-1), np.nan)
     return out
+
+
+def reference_channel_features(x, r):
+    """Straightforward slice implementation of the channel features."""
+    from held_out_well.baselines.features import (
+        EPS_REL,
+        PER_CHANNEL,
+        W2,
+        W3,
+        W4,
+    )
+
+    out = np.full((len(r), len(PER_CHANNEL)), np.nan)
+    ix = {k: i for i, k in enumerate(PER_CHANNEL)}
+    for k, rr in enumerate(r):
+
+        def window(width):
+            w = x[rr - width + 1 : rr + 1]
+            return w[np.isfinite(w)], w
+
+        a2, _ = window(W2)
+        a3, w3 = window(W3)
+        a4, _ = window(W4)
+        out[k, ix["last"]] = x[rr] if np.isfinite(x[rr]) else np.nan
+        for name, a in (("w2", a2), ("w3", a3), ("w4", a4)):
+            out[k, ix["mean_" + name]] = a.mean() if len(a) else np.nan
+            out[k, ix["std_" + name]] = a.std() if len(a) > 1 else np.nan
+        out[k, ix["min_w3"]] = a3.min() if len(a3) else np.nan
+        out[k, ix["max_w3"]] = a3.max() if len(a3) else np.nan
+        out[k, ix["finite_w3"]] = len(a3) / W3
+        s4 = a4.std() if len(a4) > 1 else np.nan
+        m4 = a4.mean() if len(a4) else np.nan
+        m3 = a3.mean() if len(a3) else np.nan
+        m2 = a2.mean() if len(a2) else np.nan
+        span = a3.max() - a3.min() if len(a3) else np.nan
+        out[k, ix["range_rel_w3"]] = span / (abs(m3) + EPS_REL + s4) if len(a3) else np.nan
+        denom = s4 + EPS_REL * (1 + abs(m4))
+        out[k, ix["z_last_w4"]] = (out[k, ix["last"]] - m4) / denom
+        out[k, ix["z_w2_w4"]] = (m2 - m4) / denom
+        if len(a3) > 1:
+            out[k, ix["cv_w3"]] = a3.std() / (abs(m3) + EPS_REL + s4)
+        q = W3 // 4
+        f1 = w3[:q][np.isfinite(w3[:q])]
+        f2 = w3[-q:][np.isfinite(w3[-q:])]
+        if len(f1) and len(f2):
+            out[k, ix["drift_w3"]] = (f2.mean() - f1.mean()) / denom
+        d = np.diff(w3)
+        dd = np.abs(d)[np.isfinite(d)]
+        out[k, ix["rough_w3"]] = (dd.mean() / denom) if len(dd) else np.nan
+        prod = d[1:] * d[:-1]
+        cnt = np.isfinite(d).sum()
+        extrema = (np.isfinite(prod) & (prod < 0)).sum()
+        out[k, ix["extrema_rate_w3"]] = extrema / cnt if cnt > 2 else np.nan
+    return out

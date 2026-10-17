@@ -66,7 +66,7 @@ jobs:
         if: always()
         run: |
           source .venv/bin/activate
-          ruff check --select W505 --config 'lint.pycodestyle.max-doc-length = 72' benchmarks/held_out_well
+          ruff check --select W505 --output-format concise --config 'lint.pycodestyle.max-doc-length = 72' benchmarks/held_out_well
 
       - name: mypy
         if: always()
@@ -97,3 +97,4 @@ jobs:
           path: |
             format.diff
             format.stat
+            benchmarks/held_out_well
