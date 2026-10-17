@@ -17,6 +17,8 @@ Frozen artefacts of protocol 3W-HW v1. The text of the protocol is in the [READM
 
 `index_labels.json`, `instances.csv`, `decisions.npz` and `manifest.csv` are derived from the labels of the 3W Dataset 2.0.0 and carry its CC BY 4.0 licence; the other files contain counts, hashes and the public beacon output.
 
+The bytes of these files are hashed and compared. The `.gitattributes` of this folder switches off git's line-ending conversion for them (the repository default is `text=auto`), so a checkout on Windows keeps the hashes.
+
 ## The commitment
 
 `COMMIT-A.md` was written before the split existed. It lists the SHA-256 of the label index, of the rule that draws the split and of the label-handling code it imports, and of the protocol text, and it names the drand round (32846926, scheduled for 2026-10-07 03:35:42 UTC) that supplies the randomness. The record lies in the author's earlier repository; it is kept here as it was written, so the paths in it (`src/w3/...`) are those of that repository:

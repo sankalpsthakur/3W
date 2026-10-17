@@ -153,9 +153,23 @@ def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
 
 
 def _theta(bench: Benchmark, score: np.ndarray, given: float | None) -> float | None:
+    """The alarm threshold: given, or chosen on the development part."""
     if given is not None:
         return given
-    theta, _ = select_threshold(bench, score, bench.wells_with_role("dev"))
+    dev = bench.wells_with_role("dev")
+    on_dev = bench.well_mask(dev)[bench.well_of_decision] & bench.elig
+    if not np.isfinite(score[on_dev]).all():
+        raise SystemExit(
+            "the file has no development scores to choose the alarm "
+            "threshold from: add them or pass --theta"
+        )
+    theta, _ = select_threshold(bench, score, dev)
+    if theta is None:
+        print(
+            "warning: no threshold meets the false-alarm budgets on the "
+            "development wells; the alarm never fires",
+            file=sys.stderr,
+        )
     return theta
 
 

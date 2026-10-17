@@ -37,8 +37,8 @@ Intervals are percentile intervals from 2,000 resamples of whole wells (seed 611
 Everything under [`protocol/`](protocol) is frozen for this version. Changing the grid, a metric definition, the class set or the wells defines a new protocol version.
 
 * **Data.** The real instances of the 3W Dataset 2.0.0: 1,119 instances from 40 wells, 32,872,250 rows at 1 Hz. Simulated and hand-drawn instances are not used. Labels decide, not folder names (43 of the 57 instances in folder 9 contain no event label). A transient label (101 to 109) counts as its event class.
-* **Decisions.** On a fixed grid: every 30 s of each instance from row 3,600, so that a full lookback exists (962,002 decisions). A model may use only the previous 3,600 rows of the same instance: no timestamps, file names, well identifiers, `class` or `state` columns, no future rows, nothing from other instances of a test well.
-* **Eligibility.** A decision is eligible when at least 90 % of the previous 900 rows have a finite value in at least one of the 18 process channels (961,578 decisions). Ineligible decisions are excluded from every denominator. Every eligible decision of the evaluated wells needs a finite prediction.
+* **Decisions.** On a fixed grid: every 30 s of each instance from row 3,600, so that a full lookback exists (962,002 decisions). A model may use only the previous 3,600 rows of the same instance: no timestamps, file names, well identifiers, `class` or `state` columns, no future rows, nothing from other instances of a test well. Transductive use of test-well data is not allowed, except causal online adaptation inside the lookback.
+* **Eligibility.** A decision is eligible when at least 90 % of the previous 900 rows have a finite value in at least one of the 18 process channels (961,578 decisions). Ineligible decisions are excluded from every denominator. Every eligible decision of the evaluated wells needs a finite prediction; the scorer rejects a file that lacks one.
 * **Split.** 10 sealed test wells and 30 development wells in 5 folds of 6, drawn by a rule committed before the draw and seeded by a public [drand](https://drand.love) beacon round. [`COMMIT-A.md`](protocol/COMMIT-A.md) fixes the rule, its code and the label index by SHA-256 and names a round that lay in the future when it was written; [`COMMIT-B.md`](protocol/COMMIT-B.md) reveals the round's signature and the manifest (see [`protocol/`](protocol/README.md)). `python -m held_out_well manifest --check` regenerates [`manifest.csv`](protocol/manifest.csv) byte for byte; the test suite also runs the original files in [`protocol/frozen/`](protocol/frozen). Sealed test wells: 00001, 00004, 00011, 00013, 00015, 00023, 00026, 00035, 00037, 00041.
 * **Development rules.** Models, hyper-parameters and thresholds use development wells only (grouped 5-fold cross-validation over the folds of the manifest). A frozen model is scored once on the sealed wells. For development, the macro averages run over the 8 classes that occur in at least two development wells (`dev_classes`).
 
@@ -55,8 +55,8 @@ Sealed test wells, 95 % well-bootstrap intervals in brackets. The numbers come f
 How the entries were made:
 
 * The four reference baselines are reproduced by the code in [`held_out_well/baselines`](held_out_well/baselines), with fixed hyper-parameters and nothing tuned on any fold. `simple` is a windowed z-test of the last 5 minutes against the previous 55 minutes of the same instance (no training). `volatility` scores the 15-minute variability of each process channel against its 99th percentile in normal operation (fitted on normal decisions only). `rf` is a random forest (100 trees) and `lgbm` a LightGBM multiclass model (200 rounds), both on 333 causal window features. Class probabilities give the event score as 1 minus P(normal).
-* `best` and `best_binary` come from a development study of a small LightGBM (200 trees, 3,000 leaves, 28 KB as an int8 export) and of a binary event detector. Their configuration was frozen on the development wells before the sealed wells were scored; see [`results/configs`](results/configs). `tspulse` is the pretrained time-series model [TSPulse](https://huggingface.co/ibm-granite/granite-timeseries-tspulse-r1) (IBM Granite, Apache-2.0) used zero-shot as a reconstruction-error detector, with the same threshold rule. The code of these three entries is in the author's earlier repository, [3w-held-out-well](https://github.com/sankalpsthakur/3w-held-out-well/tree/dd8cddc), and is not part of this folder; their predictions are scored here by the same scorer.
-* With ten test wells the intervals are wide and the entries cannot be told apart: every paired difference between `best` and the two supervised baselines has an interval that contains 0 for macro-F1.
+* `small_lgbm` and `event_detector` come from a development study of a small LightGBM (200 trees, 3,000 leaves, 28 KB as an int8 export) and of a binary event detector (called `best` and `best_binary` in the frozen configuration). Their configuration was frozen on the development wells before the sealed wells were scored; see [`results/configs`](results/configs) (SHA-256 of `dev_selected_config.json`: `131ce334...`). `tspulse` is the pretrained time-series model [TSPulse](https://huggingface.co/ibm-granite/granite-timeseries-tspulse-r1) (IBM Granite, Apache-2.0) used zero-shot as a reconstruction-error detector, with the same threshold rule. The code of these three entries is in the author's earlier repository, [3w-held-out-well](https://github.com/sankalpsthakur/3w-held-out-well/tree/dd8cddc), and is not part of this folder; their predictions are scored here by the same scorer.
+* With ten test wells the intervals are wide and the entries cannot be told apart: every paired difference between `small_lgbm` and the two supervised baselines has an interval that contains 0 for macro-F1.
 
 @@NOTES@@
 
@@ -79,9 +79,9 @@ With a local copy of the dataset (the folder with the sub-folders `0` to `9`; th
 
 ```bash
 uv pip install -r requirements.txt                                   # LightGBM, for the baselines only
-python -m held_out_well rebuild-index --dataset-root ../../dataset --out /tmp/rebuild
-python -m held_out_well baselines --dataset-root ../../dataset --out /tmp/baselines
-python -m held_out_well score /tmp/baselines/preds_lgbm.npz
+python -m held_out_well rebuild-index --dataset-root ../../dataset --out out/rebuild
+python -m held_out_well baselines --dataset-root ../../dataset --out out/baselines
+python -m held_out_well score out/baselines/preds_lgbm.npz
 ```
 
 `rebuild-index` reads every real instance with the toolkit loader and compares the label runs, the eligibility and the decision table with the committed files (instances, label runs, hashes of the decision arrays). The baselines run took about 12 minutes on 4 CPU cores in its original Kaggle run, features included.

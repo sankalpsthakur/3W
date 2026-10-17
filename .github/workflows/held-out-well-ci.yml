@@ -50,6 +50,20 @@ jobs:
           mypy --version
           pip list 2>/dev/null | grep -i -E "numpy|pandas|scikit|pydantic|torch|pyarrow|pytest" || true
 
+      - name: Licences of the dependencies, from installed metadata
+        if: matrix.python-version == '3.12'
+        run: |
+          source .venv/bin/activate
+          uv pip install lightgbm
+          python - <<'PY'
+          from importlib.metadata import metadata
+          for p in ["numpy", "pandas", "scikit-learn", "pyarrow", "pydantic", "torch", "lightgbm"]:
+              m = metadata(p)
+              lic = (m.get("License-Expression") or m.get("License") or "").replace("\n", " ")[:90]
+              cls = [c for c in (m.get_all("Classifier") or []) if c.startswith("License")]
+              print("LICENCE", p, m["Version"], "|", lic, "|", cls)
+          PY
+
       - name: ruff format --check
         if: always()
         run: |

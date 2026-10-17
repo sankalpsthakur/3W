@@ -64,3 +64,16 @@ def test_compare_reports_paired_differences(oracle_file, tmp_path, capsys, monke
 def test_manifest_command_checks_the_committed_file(capsys):
     assert cli.main(["manifest", "--check"]) == 0
     assert "identical to protocol/manifest.csv: True" in capsys.readouterr().out
+
+
+def test_missing_development_scores_ask_for_a_theta(oracle_file, tmp_path):
+    z = np.load(oracle_file)
+    b = Benchmark.load()
+    dev = b.well_mask(b.wells_with_role("dev"))[b.well_of_decision]
+    score = np.where(dev, np.nan, z["score"]).astype(np.float32)
+    path = tmp_path / "test_only.npz"
+    np.savez(path, score=score, pred=z["pred"])
+    with pytest.raises(SystemExit, match="--theta"):
+        cli.main(["score", str(path), "--boot", "0"])
+    # with a threshold given, the sealed test wells can be scored
+    assert cli.main(["score", str(path), "--theta", "0.5", "--boot", "0"]) == 0
