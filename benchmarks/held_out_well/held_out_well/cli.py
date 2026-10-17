@@ -17,7 +17,8 @@ import json
 import sys
 import tempfile
 from pathlib import Path
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -85,11 +86,14 @@ def _fmt(rep: dict[str, Any], key: str, pct: bool = False, digits: int = 3) -> s
 def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
     """Markdown summary: primary and complementary metrics, tables."""
     pt = rep["point"]
+    primary = (
+        "Primary metric, macro-F1 over the classes present in the pooled "
+        f"truth: {_fmt(rep, PRIMARY)}"
+    )
     lines = [
         f"### {name} on the {split} wells ({rep['n_wells']} wells)",
         "",
-        "Primary metric, macro-F1 over the classes present in the pooled "
-        f"truth: {_fmt(rep, PRIMARY)}",
+        primary,
         "",
         "| complementary metric | value [95 % well-bootstrap interval] |",
         "|---|---|",
@@ -116,25 +120,24 @@ def format_report(name: str, split: str, rep: dict[str, Any]) -> str:
         ("normal time in alarm", _fmt(rep, "normal_time_occupation", pct=True)),
     ]
     lines += [f"| {k} | {v} |" for k, v in rows]
-    lines += [
-        "",
+    facts = (
         f"Alarm threshold {rep['theta']}. Event AUROC / AP on unbinned "
         f"scores: {pt['auroc_exact']:.4f} / {pt['average_precision_exact']:.4f}. "
         f"Decisions: {pt['event_decisions']:.0f} event, "
         f"{pt['normal_decisions']:.0f} normal; "
         f"{pt['normal_days']:.1f} normal days; "
         f"{pt['episodes_total']:.0f} episodes "
-        f"({pt['episodes_unobservable']:.0f} unobservable).",
-    ]
+        f"({pt['episodes_unobservable']:.0f} unobservable)."
+    )
+    lines += ["", facts]
     conf = np.array(rep["confusion"])
     if conf.sum() > 0:
+        classes = " | ".join(str(c) for c in range(N_CLASSES))
         lines += [
             "",
             "Confusion matrix (rows: truth, columns: prediction, eligible decisions):",
             "",
-            "| truth \\ pred | "
-            + " | ".join(str(c) for c in range(N_CLASSES))
-            + " | support | F1 |",
+            f"| truth \\ pred | {classes} | support | F1 |",
             "|" + "---|" * (N_CLASSES + 3),
         ]
         f1 = rep["point"]
@@ -181,7 +184,7 @@ def cmd_compare(a: argparse.Namespace) -> int:
         stats.append(S)
     ci = bootstrap(stats[0], classes, B=a.boot, S2=stats[1])
     print(f"### {Path(a.a).name} minus {Path(a.b).name}, {a.split} wells")
-    print("")
+    print()
     print("| metric | difference [95 % well-bootstrap interval] |")
     print("|---|---|")
     ma = metrics_from_sums(stats[0].sum(0), classes)

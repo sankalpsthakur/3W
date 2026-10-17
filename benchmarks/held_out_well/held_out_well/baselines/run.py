@@ -14,9 +14,11 @@ from __future__ import annotations
 
 import json
 import time
+from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
+from functools import partial
 from pathlib import Path
-from typing import Any, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -126,7 +128,7 @@ def run(
     for name, maker in (("rf", R.make_random_forest), ("lgbm", R.make_lightgbm)):
         if name in models:
             R.log(f"== {name}")
-            proba = R.run_folds(bench, X, have, lambda: maker(smoke), plan, cap)
+            proba = R.run_folds(bench, X, have, partial(maker, smoke), plan, cap)
             score, pred = R.to_score_pred(proba)
             finish(name, score, pred)
     return results

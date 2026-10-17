@@ -10,7 +10,8 @@ channels. Ineligible decisions are excluded from every denominator.
 from __future__ import annotations
 
 import hashlib
-from typing import Any, Mapping, Sequence
+from collections.abc import Mapping, Sequence
+from typing import Any
 
 import numpy as np
 

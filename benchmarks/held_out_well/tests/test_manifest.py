@@ -59,7 +59,7 @@ def test_frozen_code_regenerates_the_same_bytes(tmp_path):
 
 def test_commit_a_hashes_match_the_files_in_this_folder():
     text = (PROTOCOL_DIR / "COMMIT-A.md").read_text()
-    listed = dict(re.findall(r"^- (\S+)\s+([0-9a-f]{64})$", text, re.M))
+    listed = dict(re.findall(r"^- (\S+)\s+([0-9a-f]{64})$", text, re.MULTILINE))
     where = {
         "protocol/index_labels.json": INDEX,
         "src/w3/manifest.py": FROZEN / "manifest.py.txt",

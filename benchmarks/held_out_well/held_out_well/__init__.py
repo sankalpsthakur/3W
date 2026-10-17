@@ -8,4 +8,4 @@ from .benchmark import Benchmark
 from .constants import PROTOCOL_ID
 from .scoring import report, select_threshold
 
-__all__ = ["Benchmark", "PROTOCOL_ID", "report", "select_threshold"]
+__all__ = ["PROTOCOL_ID", "Benchmark", "report", "select_threshold"]

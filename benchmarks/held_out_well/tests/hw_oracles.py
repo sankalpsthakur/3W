@@ -78,6 +78,12 @@ def metrics_numpy(S, classes=None):
     return out
 
 
+def window(x, rr, width):
+    """Rows rr - width + 1 .. rr: finite values and the raw window."""
+    w = x[rr - width + 1 : rr + 1]
+    return w[np.isfinite(w)], w
+
+
 def reference_channel_features(x, r):
     """Straightforward slice implementation of the channel features."""
     from held_out_well.baselines.features import (
@@ -92,13 +98,9 @@ def reference_channel_features(x, r):
     ix = {k: i for i, k in enumerate(PER_CHANNEL)}
     for k, rr in enumerate(r):
 
-        def window(width):
-            w = x[rr - width + 1 : rr + 1]
-            return w[np.isfinite(w)], w
-
-        a2, _ = window(W2)
-        a3, w3 = window(W3)
-        a4, _ = window(W4)
+        a2, _ = window(x, rr, W2)
+        a3, w3 = window(x, rr, W3)
+        a4, _ = window(x, rr, W4)
         out[k, ix["last"]] = x[rr] if np.isfinite(x[rr]) else np.nan
         for name, a in (("w2", a2), ("w3", a3), ("w4", a4)):
             out[k, ix["mean_" + name]] = a.mean() if len(a) else np.nan

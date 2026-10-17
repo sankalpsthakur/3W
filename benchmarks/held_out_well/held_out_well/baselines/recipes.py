@@ -12,7 +12,8 @@ from __future__ import annotations
 
 import hashlib
 import time
-from typing import Any, Callable, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
 
@@ -132,7 +133,7 @@ class VolatilityDetector:
         self.cols = [i for i, n in enumerate(feature_names) if n.endswith("|cv_w3")]
         self.q: np.ndarray = np.array([])
 
-    def fit(self, X: np.ndarray, y: np.ndarray) -> "VolatilityDetector":
+    def fit(self, X: np.ndarray, y: np.ndarray) -> VolatilityDetector:
         z = X[:, self.cols][np.asarray(y) == 0]
         q = np.nanpercentile(z, 99, axis=0)
         self.q = np.where(np.isfinite(q) & (q > 0), q, np.nan)

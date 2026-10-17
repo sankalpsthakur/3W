@@ -11,7 +11,8 @@ from __future__ import annotations
 import csv
 import json
 from pathlib import Path
-from typing import Any, Sequence
+from collections.abc import Sequence
+from typing import Any
 
 import numpy as np
 
@@ -79,7 +80,7 @@ class Benchmark:
         self.ep_well = self.inst_well[self.ep_inst]
 
     @classmethod
-    def load(cls, protocol_dir: str | Path | None = None) -> "Benchmark":
+    def load(cls, protocol_dir: str | Path | None = None) -> Benchmark:
         """Load the committed protocol files."""
         p = Path(protocol_dir) if protocol_dir else PROTOCOL_DIR
         d = np.load(p / "decisions.npz")

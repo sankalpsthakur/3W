@@ -20,9 +20,11 @@ import hashlib
 import json
 import time
 from pathlib import Path
-from typing import Any, Callable, Sequence
+from collections.abc import Callable, Sequence
+from typing import Any
 
 import numpy as np
+import pandas as pd
 from ThreeWToolkit.dataset import (
     DatasetOutputs,
     ParquetDataset,
@@ -128,7 +130,8 @@ def index_record(
         raise ValueError(f"{rel}: no label column")
     labels = _int_labels(out.label)
     states = _int_labels(sig["state"])
-    t = sig.index.values.astype("datetime64[ms]")
+    stamps = pd.DatetimeIndex(sig.index)
+    t = stamps.values.astype("datetime64[ms]")
     dt = np.diff(t).astype("int64") / 1000.0
     any_proc = process_present(out)
     record = {
@@ -136,8 +139,8 @@ def index_record(
         "well": well_of(rel),
         "folder_class": int(out.metadata["event_class"]),
         "rows": len(sig),
-        "t0": str(sig.index[0].strftime("%Y-%m-%d %H:%M:%S")),
-        "t_last": str(sig.index[-1].strftime("%Y-%m-%d %H:%M:%S")),
+        "t0": str(stamps[0].strftime("%Y-%m-%d %H:%M:%S")),
+        "t_last": str(stamps[-1].strftime("%Y-%m-%d %H:%M:%S")),
         "n_dt_ne_1": int((dt != 1.0).sum()),
         "max_dt": float(dt.max()) if len(dt) else 1.0,
         "min_dt": float(dt.min()) if len(dt) else 1.0,

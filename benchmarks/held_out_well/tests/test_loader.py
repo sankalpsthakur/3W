@@ -75,7 +75,7 @@ def test_only_real_instances_are_listed(dataset_root):
 
 
 def test_index_records(dataset_root):
-    index, elig = build_index(dataset_root)
+    index, _ = build_index(dataset_root)
     f1, f2, f3 = index["files"]
     assert f1["path"] == "dataset/0/WELL-00001_20200101000000.parquet"
     assert f1["class_runs"] == [[-1, 0, 3600], [0, 3600, 5000]]

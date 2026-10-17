@@ -82,9 +82,9 @@ def channel_features(x: np.ndarray, r: np.ndarray) -> np.ndarray:
             v = np.where(cnt > 1, np.maximum(s2 / cnt - m * m, 0.0), np.nan)
         return cnt, m, np.sqrt(v)
 
-    cnt2, m2, s2 = stats(W2)
+    _, m2, s2 = stats(W2)
     cnt3, m3, s3 = stats(W3)
-    cnt4, m4, s4 = stats(W4)
+    _, m4, s4 = stats(W4)
     last = np.where(fin[r], x[r], np.nan)
     out[:, ix["last"]] = last
     out[:, ix["mean_w2"]] = m2 + shift
@@ -176,6 +176,18 @@ SIMPLE_CHANNELS = CONT[:16]  # pressures, flows, temperatures
 SHORT, REF = 300, 3300  # windows [r-299, r] and [r-3599, r-300]
 
 
+def _past_stats(prefix, r, lo_off, hi_off):
+    """Count, mean and standard deviation of rows r-lo_off+1 .. r-hi_off."""
+    c0, c1, c2 = prefix
+    cnt = c0[r - hi_off + 1] - c0[r - lo_off + 1]
+    s1 = c1[r - hi_off + 1] - c1[r - lo_off + 1]
+    s2 = c2[r - hi_off + 1] - c2[r - lo_off + 1]
+    with np.errstate(all="ignore"):
+        m = np.where(cnt > 0, s1 / cnt, np.nan)
+        var = np.where(cnt > 1, np.maximum(s2 / cnt - m * m, 0.0), np.nan)
+    return cnt, m, np.sqrt(var)
+
+
 def simple_detector_score(cont: np.ndarray) -> np.ndarray:
     """Windowed z-test against the instance's own recent past.
 
@@ -198,18 +210,9 @@ def simple_detector_score(cont: np.ndarray) -> np.ndarray:
         xs = np.where(fin, x - shift, 0.0)
         c0, c1, c2 = _prefix(fin.astype(np.float64)), _prefix(xs), _prefix(xs * xs)
 
-        def stats(lo_off, hi_off):
-            # rows r - lo_off + 1 .. r - hi_off
-            cnt = c0[r - hi_off + 1] - c0[r - lo_off + 1]
-            s1 = c1[r - hi_off + 1] - c1[r - lo_off + 1]
-            s2 = c2[r - hi_off + 1] - c2[r - lo_off + 1]
-            with np.errstate(all="ignore"):
-                m = np.where(cnt > 0, s1 / cnt, np.nan)
-                var = np.where(cnt > 1, np.maximum(s2 / cnt - m * m, 0.0), np.nan)
-            return cnt, m, np.sqrt(var)
-
-        cnt_s, m_s, sd_s = stats(SHORT, 0)
-        cnt_r, m_r, sd_r = stats(SHORT + REF, SHORT)
+        prefix = (c0, c1, c2)
+        cnt_s, m_s, sd_s = _past_stats(prefix, r, SHORT, 0)
+        cnt_r, m_r, sd_r = _past_stats(prefix, r, SHORT + REF, SHORT)
         ok = (cnt_s >= 0.8 * SHORT) & (cnt_r >= 0.8 * REF)
         with np.errstate(all="ignore"):
             mean_ref = m_r + shift
